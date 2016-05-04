@@ -23,7 +23,7 @@ from parse_out_email_text import parseOutText
 """
 
 
-from_sara  = open("from_sara.txt", "r")
+from_sara = open("from_sara.txt", "r")
 from_chris = open("from_chris.txt", "r")
 
 from_data = []
@@ -47,9 +47,13 @@ for name, from_person in [("sara", from_sara), ("chris", from_chris)]:
             email = open(path, "r")
 
             ### use parseOutText to extract the text from the opened email
+            email_text = parseOutText(email)
 
             ### use str.replace() to remove any instances of the words
             ### ["sara", "shackleton", "chris", "germani"]
+            for i in email_text:
+                email_text = str.replace()
+
 
             ### append the text to word_data
 

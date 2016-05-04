@@ -9,13 +9,11 @@
 
 
 import pickle
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
 import sys
 sys.path.append("../tools/")
 from feature_format import featureFormat, targetFeatureSplit
-
-
 
 
 def Draw(pred, features, poi, mark_poi=False, name="image.png", f1_name="feature 1", f2_name="feature 2"):
@@ -32,6 +30,7 @@ def Draw(pred, features, poi, mark_poi=False, name="image.png", f1_name="feature
         for ii, pp in enumerate(pred):
             if poi[ii]:
                 plt.scatter(features[ii][0], features[ii][1], color="r", marker="*")
+    plt.ticklabel_format(style = 'plain')
     plt.xlabel(f1_name)
     plt.ylabel(f2_name)
     plt.savefig(name)
@@ -44,6 +43,15 @@ data_dict = pickle.load( open("../final_project/final_project_dataset.pkl", "r")
 ### there's an outlier--remove it! 
 data_dict.pop("TOTAL", 0)
 
+#for dVals in data_dict.values():
+#    print max(dVals, key=lambda x:x['exercised_stock_options'])
+
+print max([1,2,3,4,5,float('NaN')])
+m = max(data_dict, key=lambda v: data_dict[v].get('exercised_stock_options', float('-inf')))
+print data_dict[m]
+
+m = min(data_dict, key=lambda v: data_dict[v].get('exercised_stock_options', float('inf')))
+print data_dict[m]
 
 ### the input features we want to use 
 ### can be any key in the person-level dictionary (salary, director_fees, etc.) 
@@ -54,14 +62,13 @@ features_list = [poi, feature_1, feature_2]
 data = featureFormat(data_dict, features_list )
 poi, finance_features = targetFeatureSplit( data )
 
-
 ### in the "clustering with 3 features" part of the mini-project,
 ### you'll want to change this line to 
 ### for f1, f2, _ in finance_features:
 ### (as it's currently written, line below assumes 2 features)
 for f1, f2 in finance_features:
     plt.scatter( f1, f2 )
-plt.show()
+#plt.show()
 
 
 
