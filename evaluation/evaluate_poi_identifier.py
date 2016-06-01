@@ -23,7 +23,7 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 import numpy as np
 
-data_dict = pickle.load(open("../final_project/final_project_dataset.pkl", "r") )
+data_dict = pickle.load(open("../my_final_project/final_project_dataset.pkl", "r") )
 
 ### add more features to features_list!
 features_list = ["poi", "salary"]

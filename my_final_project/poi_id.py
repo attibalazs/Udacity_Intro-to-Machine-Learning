@@ -6,15 +6,20 @@ sys.path.append("../tools/")
 
 from feature_format import featureFormat, targetFeatureSplit
 from tester import dump_classifier_and_data
+from sklearn.metrics import confusion_matrix
+from sklearn.decomposition import RandomizedPCA
+
 
 ### Task 1: Select what features you'll use.
 ### features_list is a list of strings, each of which is a feature name.
 ### The first feature must be "poi".
-features_list = ['poi', 'salary', 'bonus'] # You will need to use more features
+features_list = ['poi', 'salary', 'bonus', 'total_payments'] # You will need to use more features
 
 ### Load the dictionary containing the dataset
 with open("final_project_dataset.pkl", "r") as data_file:
     data_dict = pickle.load(data_file)
+
+print data_dict
 
 ### Task 2: Remove outliers
 data_dict.pop("TOTAL", 0)
@@ -34,8 +39,14 @@ labels, features = targetFeatureSplit(data)
 ### http://scikit-learn.org/stable/modules/pipeline.html
 
 # Provided to give you a starting point. Try a variety of classifiers.
-from sklearn.naive_bayes import GaussianNB
-clf = GaussianNB()
+#from sklearn.naive_bayes import GaussianNB
+#clf = GaussianNB()
+
+from sklearn import tree
+clf = tree.DecisionTreeClassifier(min_samples_split = 40)
+
+#from sklearn.svm import SVC
+#clf = SVC(kernel="rbf", C=10000)
 
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall 
 ### using our testing script. Check the tester.py script in the final project
@@ -48,6 +59,21 @@ clf = GaussianNB()
 from sklearn.cross_validation import train_test_split
 features_train, features_test, labels_train, labels_test = \
     train_test_split(features, labels, test_size=0.3, random_state=42)
+
+clf.fit(features_train, labels_train)
+predictions = clf.predict(features_test)
+print predictions
+
+#check accuracy
+from sklearn.metrics import accuracy_score
+accuracy = accuracy_score(labels_test, predictions)
+print 'accuracy:', accuracy
+
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+
+print "precision", precision_score(labels_test, predictions)
+print "recall", recall_score(labels_test, predictions)
 
 ### Task 6: Dump your classifier, dataset, and features_list so anyone can
 ### check your results. You do not need to change anything below, but make sure
