@@ -7,19 +7,21 @@ sys.path.append("../tools/")
 from feature_format import featureFormat, targetFeatureSplit
 from tester import dump_classifier_and_data
 from sklearn.metrics import confusion_matrix
-from sklearn.decomposition import RandomizedPCA
+from sklearn.decomposition import PCA
+from sklearn.pipeline import Pipeline
 
 
 ### Task 1: Select what features you'll use.
 ### features_list is a list of strings, each of which is a feature name.
 ### The first feature must be "poi".
-features_list = ['poi', 'salary', 'bonus', 'total_payments'] # You will need to use more features
+#features_list = ['poi', 'salary', 'bonus', 'total_payments', 'expenses'] # You will need to use more features
+
+features_list = ['poi', 'salary', 'deferral_payments', 'total_payments', 'loan_advances', 'bonus', 'restricted_stock_deferred', 'deferred_income', 'total_stock_value', 'expenses', 'exercised_stock_options', 'other', 'long_term_incentive', 'restricted_stock', 'director_fees']
+#features_list  = financial_features.append('poi')
 
 ### Load the dictionary containing the dataset
 with open("final_project_dataset.pkl", "r") as data_file:
     data_dict = pickle.load(data_file)
-
-print data_dict
 
 ### Task 2: Remove outliers
 data_dict.pop("TOTAL", 0)
@@ -31,6 +33,17 @@ my_dataset = data_dict
 ### Extract features and labels from dataset for local testing
 data = featureFormat(my_dataset, features_list)
 labels, features = targetFeatureSplit(data)
+print labels[0], features[0], data[0]
+
+#find any features which have few samples
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import f_classif
+
+#print data.shape, len(labels)
+features = SelectKBest(f_classif, k=10).fit_transform(features, labels)
+print features.shape
+
+
 
 ### Task 4: Try a varity of classifiers
 ### Please name your classifier clf for easy export below.
@@ -43,7 +56,9 @@ labels, features = targetFeatureSplit(data)
 #clf = GaussianNB()
 
 from sklearn import tree
-clf = tree.DecisionTreeClassifier(min_samples_split = 40)
+
+steps = [('reduce_dim', PCA()), ('clf', tree.DecisionTreeClassifier())]
+pipe = Pipeline(steps)
 
 #from sklearn.svm import SVC
 #clf = SVC(kernel="rbf", C=10000)
@@ -60,7 +75,13 @@ from sklearn.cross_validation import train_test_split
 features_train, features_test, labels_train, labels_test = \
     train_test_split(features, labels, test_size=0.3, random_state=42)
 
-clf.fit(features_train, labels_train)
+from sklearn.grid_search import GridSearchCV
+params = dict(reduce_dim__n_components=[2, 4, 8],
+clf__min_samples_split=[30, 40, 50])
+
+grid_search = GridSearchCV(pipe, param_grid=params)
+grid_search.fit(features_train, labels_train)
+clf = grid_search.best_estimator_
 predictions = clf.predict(features_test)
 print predictions
 
@@ -68,6 +89,7 @@ print predictions
 from sklearn.metrics import accuracy_score
 accuracy = accuracy_score(labels_test, predictions)
 print 'accuracy:', accuracy
+print("number of features are ", len(features_train))
 
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score

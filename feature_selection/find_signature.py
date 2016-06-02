@@ -6,8 +6,10 @@ numpy.random.seed(42)
 
 
 ### the words (features) and authors (labels), already largely processed
-words_file = "word_data_overfit.pkl" ### like the file you made in the last mini-project 
+words_file = "word_data_overfit.pkl" ### like the file you made in the last mini-project
 authors_file = "email_authors_overfit.pkl"  ### this too
+#words_file = "../text_learning/your_word_data.pkl"
+#authors_file = "../text_learning/your_email_authors.pkl"
 word_data = pickle.load( open(words_file, "r"))
 authors = pickle.load( open(authors_file, "r") )
 
@@ -29,11 +31,18 @@ features_test  = vectorizer.transform(features_test).toarray()
 ### of data points and a large number of features
 ### train on only 150 events to put ourselves in this regime
 features_train = features_train[:150]
-labels_train   = labels_train[:150]
-
-
+labels_train = labels_train[:150]
 
 ### your code goes here
+
+from sklearn import tree
+clf = tree.DecisionTreeClassifier(min_samples_split = 40)
+clf.fit(features_train, labels_train)
+pred = clf.predict(features_test)
+from sklearn.metrics import accuracy_score
+acc = accuracy_score(labels_test, pred)
+print("accuracy is ", acc)
+print("number of features are ", len(features_train))
 
 
 
