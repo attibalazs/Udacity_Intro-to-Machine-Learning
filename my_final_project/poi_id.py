@@ -16,8 +16,8 @@ from sklearn.pipeline import Pipeline
 ### The first feature must be "poi".
 #features_list = ['poi', 'salary', 'bonus', 'total_payments', 'expenses'] # You will need to use more features
 
-features_list = ['poi', 'salary', 'deferral_payments', 'total_payments', 'loan_advances', 'bonus', 'restricted_stock_deferred', 'deferred_income', 'total_stock_value', 'expenses', 'exercised_stock_options', 'other', 'long_term_incentive', 'restricted_stock', 'director_fees']
-#features_list  = financial_features.append('poi')
+features_list = ['poi', 'salary', 'deferral_payments', 'total_payments', 'loan_advances', 'bonus', 'restricted_stock_deferred', 'deferred_income', 'total_stock_value', 'expenses', 'exercised_stock_options', 'other', 'long_term_incentive', 'restricted_stock', 'director_fees',
+                 'to_messages', 'from_poi_to_this_person', 'from_messages', 'from_this_person_to_poi', 'shared_receipt_with_poi']
 
 ### Load the dictionary containing the dataset
 with open("final_project_dataset.pkl", "r") as data_file:
@@ -33,16 +33,14 @@ my_dataset = data_dict
 ### Extract features and labels from dataset for local testing
 data = featureFormat(my_dataset, features_list)
 labels, features = targetFeatureSplit(data)
-print labels[0], features[0], data[0]
 
 #find any features which have few samples
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_classif
 
-#print data.shape, len(labels)
+print len(features), len(features[0])
 features = SelectKBest(f_classif, k=10).fit_transform(features, labels)
 print features.shape
-
 
 
 ### Task 4: Try a varity of classifiers
@@ -52,12 +50,17 @@ print features.shape
 ### http://scikit-learn.org/stable/modules/pipeline.html
 
 # Provided to give you a starting point. Try a variety of classifiers.
-#from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import GaussianNB
 #clf = GaussianNB()
 
 from sklearn import tree
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import svm
 
 steps = [('reduce_dim', PCA()), ('clf', tree.DecisionTreeClassifier())]
+#steps = [('reduce_dim', PCA()), ('clf', GaussianNB())]
+#steps = [('reduce_dim', PCA()), ('clf', RandomForestClassifier(random_state=42))]
+#steps = [('reduce_dim', PCA()), ('clf', svm.SVC())]
 pipe = Pipeline(steps)
 
 #from sklearn.svm import SVC
@@ -76,9 +79,17 @@ features_train, features_test, labels_train, labels_test = \
     train_test_split(features, labels, test_size=0.3, random_state=42)
 
 from sklearn.grid_search import GridSearchCV
-params = dict(reduce_dim__n_components=[2, 4, 8],
-clf__min_samples_split=[30, 40, 50])
 
+# Params for Random Forrest
+# params = dict(reduce_dim__n_components=[2,3,4,5,6,7,9,9,10], clf__n_estimators=[10, 15, 20, 25],
+#               clf__min_samples_split=[2, 3, 4, 5], clf__random_state=[42])
+#
+# params for DecisionTree
+params = dict(reduce_dim__n_components=[2,3,4,5,6,7,9,9,10],
+                clf__min_samples_split=[2, 3, 4, 5], clf__random_state=[42])
+
+# params for GaussianNB / SVC classifier
+# params = dict(reduce_dim__n_components=[2,3,4,5,6,7,9,9,10])
 grid_search = GridSearchCV(pipe, param_grid=params)
 grid_search.fit(features_train, labels_train)
 clf = grid_search.best_estimator_
@@ -89,7 +100,8 @@ print predictions
 from sklearn.metrics import accuracy_score
 accuracy = accuracy_score(labels_test, predictions)
 print 'accuracy:', accuracy
-print("number of features are ", len(features_train))
+print("feature importances ", clf.named_steps['clf'].feature_importances_)
+print("n_features_", clf.named_steps['clf'].n_features_)
 
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
